@@ -1,7 +1,6 @@
 package tech.nekonyan.samplepicker
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -33,13 +32,17 @@ object Helper {
     const val GALLERY_CODE = 2
     const val DOCUMENT_CODE = 3
 
+    private const val JPG_ONLY = "image/jpeg"
+    private const val PDF_ONLY = "application/pdf"
+    private const val ALL_IMAGE_ONLY = "image/*"
+    private const val ALL_FILE_TYPE = "*/*"
+
     private val PERMISSIONS = arrayOf(
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.CAMERA
     )
 
-    @SuppressLint("InlinedApi")
     @RequiresApi(33)
     private val PERMISSIONS_13 = arrayOf(
         Manifest.permission.READ_MEDIA_IMAGES,
@@ -98,7 +101,7 @@ object Helper {
         photoFile?.also { file ->
             val photoURI: Uri = FileProvider.getUriForFile(
                 this,
-                "com.example.android.provider",
+                "${BuildConfig.APPLICATION_ID}.provider",
                 file
             )
             cameraResultUri = photoURI
@@ -126,11 +129,21 @@ object Helper {
         }
     }
 
+    @RequiresApi(33)
+    fun ActivityResultLauncher<Intent>.openGalleryPickerAndroid13() {
+        val intent = Intent(MediaStore.ACTION_PICK_IMAGES).apply {
+            putExtra(MediaStore.EXTRA_PICK_IMAGES_MAX, 10)
+            type = JPG_ONLY
+        }
+
+        launch(intent)
+    }
+
     fun ActivityResultLauncher<Intent>.openFilePicker(code: Int) {
         val fileType = when (code) {
-            GALLERY_CODE -> "image/jpeg"
-            DOCUMENT_CODE -> "application/pdf"
-            else -> "*/*"
+            GALLERY_CODE -> JPG_ONLY
+            DOCUMENT_CODE -> PDF_ONLY
+            else -> ALL_FILE_TYPE
         }
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)

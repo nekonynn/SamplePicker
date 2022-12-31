@@ -1,11 +1,9 @@
 package tech.nekonyan.samplepicker
 
-import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +15,7 @@ import tech.nekonyan.samplepicker.Helper.copyUriToFile
 import tech.nekonyan.samplepicker.Helper.getFilesListener
 import tech.nekonyan.samplepicker.Helper.openCamera
 import tech.nekonyan.samplepicker.Helper.openFilePicker
+import tech.nekonyan.samplepicker.Helper.openGalleryPickerAndroid13
 import tech.nekonyan.samplepicker.Helper.requestPermission
 
 class MainActivity : AppCompatActivity() {
@@ -43,11 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         btnGallery.setOnClickListener {
             if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val intent = Intent(MediaStore.ACTION_PICK_IMAGES).apply {
-                    putExtra(MediaStore.EXTRA_PICK_IMAGES_MAX, 10)
-                    type = "image/jpeg"
-                }
-                galleryListener.launch(intent)
+                galleryListener.openGalleryPickerAndroid13()
             } else {
                 galleryListener.openFilePicker(GALLERY_CODE)
             }
