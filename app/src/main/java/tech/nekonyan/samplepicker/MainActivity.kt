@@ -29,9 +29,11 @@ class MainActivity : AppCompatActivity() {
         val btnGallery = findViewById<Button>(R.id.btnGallery)
         val btnDocument = findViewById<Button>(R.id.btnDocument)
 
-        val cameraListener = getFilesListener(CAMERA_CODE) {
-            val file = copyUriToFile(cameraResult, 0, true)
-            Log.d("DebugPicker", "Camera result: ${file?.path}")
+        val cameraListener = getFilesListener(CAMERA_CODE) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val file = copyUriToFile(cameraResult, 0, true)
+                Log.d("DebugPicker", "Camera result: ${file?.path}")
+            }
         }
         val galleryListener = getFilesListener(GALLERY_CODE)
         val documentListener = getFilesListener(DOCUMENT_CODE)

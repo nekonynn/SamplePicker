@@ -2,6 +2,7 @@ package tech.nekonyan.samplepicker
 
 import android.Manifest
 import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -16,7 +17,6 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import org.apache.commons.io.FileUtils
@@ -37,12 +37,18 @@ object Helper {
     private const val ALL_IMAGE_ONLY = "image/*"
     private const val ALL_FILE_TYPE = "*/*"
 
+    // WRITE_EXTERNAL_STORAGE returns false when you check it.
     private val PERMISSIONS = arrayOf(
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.CAMERA
     )
 
+    // No need to request WRITE_EXTERNAL_STORAGE if you use app-specific storage:
+    // Reference: https://developer.android.com/about/versions/11/privacy/storage#app-specific-external
+    // Reference to READ_MEDIA_IMAGES permission:
+    // https://developer.android.com/about/versions/13/behavior-changes-13#granular-media-permissions
+    // https://medium.com/@maydin/how-to-migrate-read-external-storage-permission-to-read-media-images-permission-for-android-13-ab99de39318
     @RequiresApi(33)
     private val PERMISSIONS_13 = arrayOf(
         Manifest.permission.READ_MEDIA_IMAGES,
@@ -167,7 +173,8 @@ object Helper {
             val data = result?.data
             val clipData = data?.clipData
             listener?.invoke(result)
-            if (data != null && result.resultCode == AppCompatActivity.RESULT_OK) {
+            if (data != null && result.resultCode == RESULT_OK) {
+                // Multiple file
                 if (clipData != null) {
                     for (i in 0 until clipData.itemCount) {
                         val uri = clipData.getItemAt(i).uri
@@ -175,6 +182,7 @@ object Helper {
                         Log.d("DebugPicker", "$prefix$i: Uri - ${file?.path}")
                     }
                 } else {
+                    // Single file
                     val uri = data.data
                     val file = copyUriToFile(uri, 0, code != DOCUMENT_CODE)
                     Log.d("DebugPicker", "$prefix: Uri - ${file?.path}")
